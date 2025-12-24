@@ -1,42 +1,35 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../utils/supabaseClient';
-import Navbar from '../components/Navbar';
+  const handleRedeem = async (reward) => {
+    // 1. التحقق من الرصيد الحالي للمستخدم
+    if (profile.points < reward.cost) {
+      alert(`رصيدك غير كافي. تحتاج إلى ${reward.cost - profile.points} نقطة إضافية للحصول على هذه الجائزة. استمر في إنجاز المهام! 🚀`);
+      return;
+    }
 
-export default function Rewards() {
-  const [rewards, setRewards] = useState([]);
-  const [loading, setLoading] = useState(true);
+    // 2. طلب وسيلة التواصل إذا كان الرصيد كافياً
+    const contactInfo = prompt("يرجى إدخال بريدك الإلكتروني أو رقمك لاستلام الجائزة:");
+    
+    if (contactInfo) {
+      // 3. خصم النقاط وتحديث قاعدة البيانات
+      const newPoints = profile.points - reward.cost;
+      
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ points: newPoints })
+        .eq('id', profile.id);
 
-  useEffect(() => {
-    const fetchRewards = async () => {
-      // جلب الجوائز من جدول rewards الذي أنشأناه في قاعدة البيانات
-      let { data, error } = await supabase.from('rewards').select('*');
-      if (!error) setRewards(data);
-      setLoading(false);
-    };
-    fetchRewards();
-  }, []);
-
-  return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <Navbar />
-      <main className="p-6 max-w-4xl mx-auto text-center">
-        <h1 className="text-3xl font-bold mb-8 text-yellow-500">متجر الجوائز 🎁</h1>
-        
-        {loading ? <p>جاري تحميل الجوائز...</p> : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {rewards.length > 0 ? rewards.map((reward) => (
-              <div key={reward.id} className="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-lg">
-                <h3 className="text-xl font-bold mb-2">{reward.title}</h3>
-                <p className="text-gray-400 text-sm mb-4">{reward.description}</p>
-                <div className="text-blue-400 font-bold mb-4">{reward.cost} نقطة</div>
-                <button className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg transition font-bold w-full">
-                  استبدال الآن
-                </button>
-              </div>
-            )) : <p className="col-span-3 text-gray-500">لا توجد جوائز متاحة حالياً.</p>}
-          </div>
-        )}
-      </main>
-    </div>
-  );
+      if (!updateError) {
+        // 4. تسجيل طلب السحب في جدول withdrawals
+        await supabase.from('withdrawals').insert([
+          { 
+            user_id: profile.id, 
+            reward_id: reward.id, 
+            details: contactInfo,
+            status: 'pending' 
           }
+        ]);
+        
+        setProfile({ ...profile, points: newPoints });
+        alert("تم إرسال طلبك بنجاح! سيتم مراجعته وإرسال الجائزة لك قريباً. ✨");
+      }
+    }
+  };
