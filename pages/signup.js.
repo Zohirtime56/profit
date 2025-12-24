@@ -4,13 +4,25 @@ import { supabase } from '../utils/supabaseClient';
 export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+const [username, setUsername] = useState('');
 
-  const handleSignup = async (e) => {
+    const handleSignup = async (e) => {
     e.preventDefault();
-    const { error } = await supabase.auth.signUp({ email, password });
+    // التعديل هنا: إضافة خيارات البيانات (metadata)
+    const { error } = await supabase.auth.signUp({ 
+      email, 
+      password,
+      options: {
+        data: {
+          username: username, // ربط حقل الاسم بقاعدة البيانات
+        }
+      }
+    });
+
     if (error) alert(error.message);
-    else alert('تحقق من بريدك الإلكتروني لتأكيد الحساب!');
+    else alert('تم إرسال رابط التأكيد! تفقد بريدك الإلكتروني.');
   };
+
 
   return (
     <div style={{ padding: '20px', textAlign: 'center' }}>
