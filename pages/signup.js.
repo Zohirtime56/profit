@@ -4,17 +4,16 @@ import { supabase } from '../utils/supabaseClient';
 export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-const [username, setUsername] = useState('');
+  const [username, setUsername] = useState(''); // هذا المخزن يحتاج لبيانات من الشاشة
 
-    const handleSignup = async (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
-    // التعديل هنا: إضافة خيارات البيانات (metadata)
     const { error } = await supabase.auth.signUp({ 
       email, 
       password,
       options: {
         data: {
-          username: username, // ربط حقل الاسم بقاعدة البيانات
+          username: username, 
         }
       }
     });
@@ -23,20 +22,31 @@ const [username, setUsername] = useState('');
     else alert('تم إرسال رابط التأكيد! تفقد بريدك الإلكتروني.');
   };
 
-
   return (
     <div style={{ padding: '20px', textAlign: 'center' }}>
       <h1>إنشاء حساب جديد 🎮</h1>
       <form onSubmit={handleSignup}>
+        
+        {/* الفرق هنا: أضفنا هذا الحقل لكي يتمكن المستخدم من الكتابة فيه */}
+        <input 
+          type="text" 
+          placeholder="اسم المستخدم" 
+          required
+          onChange={(e) => setUsername(e.target.value)} 
+          style={{ display: 'block', margin: '10px auto', padding: '10px' }}
+        />
+
         <input 
           type="email" 
           placeholder="البريد الإلكتروني" 
+          required
           onChange={(e) => setEmail(e.target.value)} 
           style={{ display: 'block', margin: '10px auto', padding: '10px' }}
         />
         <input 
           type="password" 
           placeholder="كلمة السر" 
+          required
           onChange={(e) => setPassword(e.target.value)} 
           style={{ display: 'block', margin: '10px auto', padding: '10px' }}
         />
@@ -45,3 +55,4 @@ const [username, setUsername] = useState('');
     </div>
   );
 }
+
