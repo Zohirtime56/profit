@@ -4,11 +4,13 @@ import { supabase } from '../utils/supabaseClient';
 export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [username, setUsername] = useState(''); // هذا المخزن يحتاج لبيانات من الشاشة
+  const [username, setUsername] = useState('');
 
   const handleSignup = async (e) => {
     e.preventDefault();
-    const { error } = await supabase.auth.signUp({ 
+    
+    // محاولة إنشاء الحساب وإرسال اسم المستخدم ضمن البيانات الإضافية
+    const { data, error } = await supabase.auth.signUp({ 
       email, 
       password,
       options: {
@@ -18,8 +20,12 @@ export default function Signup() {
       }
     });
 
-    if (error) alert(error.message);
-    else alert('تم إرسال رابط التأكيد! تفقد بريدك الإلكتروني.');
+    if (error) {
+      // تعديل لإظهار تفاصيل الخطأ بدقة إذا فشلت العملية
+      alert(`فشل التسجيل: ${error.message}`);
+    } else {
+      alert('تم إرسال رابط التأكيد! تفقد بريدك الإلكتروني 📧');
+    }
   };
 
   return (
@@ -27,7 +33,7 @@ export default function Signup() {
       <h1>إنشاء حساب جديد 🎮</h1>
       <form onSubmit={handleSignup}>
         
-        {/* الفرق هنا: أضفنا هذا الحقل لكي يتمكن المستخدم من الكتابة فيه */}
+        {/* حقل اسم المستخدم */}
         <input 
           type="text" 
           placeholder="اسم المستخدم" 
@@ -36,6 +42,7 @@ export default function Signup() {
           style={{ display: 'block', margin: '10px auto', padding: '10px' }}
         />
 
+        {/* حقل البريد الإلكتروني */}
         <input 
           type="email" 
           placeholder="البريد الإلكتروني" 
@@ -43,6 +50,8 @@ export default function Signup() {
           onChange={(e) => setEmail(e.target.value)} 
           style={{ display: 'block', margin: '10px auto', padding: '10px' }}
         />
+        
+        {/* حقل كلمة السر */}
         <input 
           type="password" 
           placeholder="كلمة السر" 
@@ -50,7 +59,10 @@ export default function Signup() {
           onChange={(e) => setPassword(e.target.value)} 
           style={{ display: 'block', margin: '10px auto', padding: '10px' }}
         />
-        <button type="submit" style={{ padding: '10px 20px', cursor: 'pointer' }}>سجل الآن</button>
+        
+        <button type="submit" style={{ padding: '10px 20px', cursor: 'pointer' }}>
+          سجل الآن
+        </button>
       </form>
     </div>
   );
